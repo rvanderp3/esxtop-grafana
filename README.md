@@ -25,7 +25,7 @@ ssh <esxuser>@<esxihost> esxtop -export-entity entities.dat
 scp <esxuser>@<esxihost>:entities.dat .
 ~~~
 
-In this file there are entity groups.  `SchedGroup` contains processes and VMs.  If the goal is to collect metrics from VMs assocaited with nodes in the cluster the VMs of interest must be isolated.
+In this file there are entity groups.  `SchedGroup` contains processes and VMs.  If the goal is to collect metrics from VMs associated with nodes in the cluster the VMs of interest must be isolated.
 
 2. Filter entities to collect
 
@@ -55,3 +55,4 @@ b. From the root of the project, run `podman-compose build;podman-compose up`
 Enter `http://localhost:3000` in to your browser of choice.  The datasource is `esxtop batch reader`.  The metrics server only has limited query support:
 - The timeframe of the metrics can be restricted
 - Indiviual metrics can be selected for query
+- Substrings of metrics can be provided in the query
