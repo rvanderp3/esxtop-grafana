@@ -111,7 +111,7 @@ def populateResults(query, start, end):
 def timeToMillis(time):    
     return datetime.strptime(time,'%m/%d/%Y %H:%M:%S').timestamp()
 
-with open('metrics.csv') as f:
+with open('/csv/metrics.csv') as f:
     firstLine = True
     for line in f:
         columns = line.split(",")        
