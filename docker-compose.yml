@@ -2,7 +2,7 @@ services:
   dataserv:
     build: ./dataserv
     volumes: 
-        - ./dataserv/data:/csv:z
+        - ./dataserv:/csv:z
   grafana:
     build: ./grafana
     ports: 

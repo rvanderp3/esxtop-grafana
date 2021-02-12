@@ -1,6 +1,6 @@
 FROM python
 
-COPY clean.py clean.py
+COPY metric_server.py metric_server.py
 RUN pip install flask
 EXPOSE 5000
 
