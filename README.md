@@ -33,13 +33,13 @@ In this file there are entity groups.  `SchedGroup` contains processes and VMs. 
 NODES=$(oc get nodes -o=jsonpath='{.items[*].metadata.name}')
 echo SchedGroup > filtered.dat
 for NODE in $NODES; do cat entities.dat | grep $NODE >> filtered.dat ; done
-scp <esxuser>@<esxihost>:filtered.dat .
+scp filtered.dat <esxuser>@<esxihost>: .
 ~~~
 
 3. Collect metrics
 
 ~~~
-ssh <esxuser>@<esxihost> esxtop -b -import-entity filtered.dat &> metrics.csv
+ssh <esxuser>@<esxihost> esxtop -b -import-entity filtered.dat | tee metrics.csv
 ~~~
 
 When finished, `control+c` can be invoked.  Also, `esxtop` accepts parameters which define the time between collections(`-d`) and the number of collections(`-n`).  Otherwise, `esxtop` will run until interrupted.
