@@ -1,0 +1,7 @@
+apiVersion: 1
+
+datasources:
+  - name: esxtop batch reader
+    type: prometheus
+    access: proxy
+    url: http://dataserv:5000

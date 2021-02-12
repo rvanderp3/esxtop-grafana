@@ -1,0 +1,9 @@
+services:
+  dataserv:
+    build: ./dataserv
+    volumes: 
+        - ./dataserv/data:/csv:z
+  grafana:
+    build: ./grafana
+    ports: 
+      - 3000:3000
