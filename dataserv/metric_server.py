@@ -6,6 +6,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 import json 
 import copy
+import re
 
 app = Flask("dataserv")
 
@@ -40,6 +41,7 @@ def metadata():
 
 columnMap = dict()
 metrics = dict()
+hostname=""
 
 metadataResults = {
     "status": "success",
@@ -82,12 +84,14 @@ def getMetadata():
 def populateResults(query, start, end):
     outResults = copy.deepcopy(results)
     resultMap = {}
-    for col in columnMap:
-        if col == "time" or (query != None and query != col):
+    
+    for col in columnMap:        
+        if col == "time" or (query != None and col.find(query) == -1):
             continue
         thisResult = copy.deepcopy(result)
         resultMap[col] = thisResult
-        thisResult["metric"]["__name__"] = thisResult["metric"]["job"] = thisResult["metric"]["instance"] = col    
+        thisResult["metric"]["__name__"] = col    
+        thisResult["metric"]["instance"] = hostname
 
     index = 0
 
@@ -96,7 +100,7 @@ def populateResults(query, start, end):
             index = index + 1
         else:
             for col in columnMap:            
-                if col == "time" or (query != None and query != col):
+                if col == "time" or (query != None and col.find(query) == -1):
                     continue                
                 resultMap[col]["values"].append([t,metrics[col][index]])
             index = index + 1    
@@ -121,9 +125,13 @@ with open('/csv/metrics.csv') as f:
             metrics["time"] = []
             for col in columns:
                 try:
-                    col = col[3:-1]
-                    hostnameLoc = col.index("\\")                    
-                    name = col[hostnameLoc+1:-1].replace(' ', '').replace('\\', '_').replace('(', '').replace(')', '').lower()                    
+                    col = col[3:]
+                    hostnameLoc = col.index("\\")   
+                    if hostname == "":
+                        hostname = col[0:hostnameLoc]           
+                        print("hn:"+hostname)      
+                    name = col[hostnameLoc+1:-1]
+                    name = re.sub("[() ]","",name).replace('\\', '_')                    
                     columnMap[name] = index
                     metrics[name] = []
                     index = index + 1
