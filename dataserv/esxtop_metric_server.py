@@ -4,13 +4,12 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
 from flask import Flask, jsonify, request
+from start import app
 import json 
 import copy
 import re
 
-app = Flask("dataserv")
-
-@app.route("/api/v1/label/__name__/values", methods=['GET'])
+@app.route("/esxtop/api/v1/label/__name__/values", methods=['GET'])
 def labels():
     labels = []
     outResults = {
@@ -23,9 +22,9 @@ def labels():
         labels.append(col)
     return json.dumps(outResults)
     
-@app.route("/api/v1/values", methods=['GET'])
-@app.route("/api/v1/query", methods=['GET'])
-@app.route("/api/v1/query_range", methods=['GET'])
+@app.route("/esxtop/api/v1/values", methods=['GET'])
+@app.route("/esxtop/api/v1/query", methods=['GET'])
+@app.route("/esxtop/api/v1/query_range", methods=['GET'])
 def query():
     query_parameters = request.args
     
@@ -35,7 +34,7 @@ def query():
     return populateResults(query_val,start_time,end_time)
     
 
-@app.route("/api/v1/metadata", methods=['GET'])
+@app.route("/esxtop/api/v1/metadata", methods=['GET'])
 def metadata():
     return getMetadata()
 
@@ -115,7 +114,7 @@ def populateResults(query, start, end):
 def timeToMillis(time):    
     return datetime.strptime(time,'%m/%d/%Y %H:%M:%S').timestamp()
 
-with open('/csv/metrics.csv') as f:
+with open('/csv/data/esxtop/metrics.csv') as f:
     firstLine = True
     for line in f:
         columns = line.split(",")        
@@ -144,4 +143,4 @@ with open('/csv/metrics.csv') as f:
                 val = columns[columnMap[col]].replace('"', '')
                 metrics[col].append(val)
 
-app.run(host= '0.0.0.0')
+

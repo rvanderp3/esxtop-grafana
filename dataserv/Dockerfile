@@ -1,8 +1,8 @@
 FROM python
 
-COPY metric_server.py metric_server.py
+COPY *.py .
 RUN pip install flask
 EXPOSE 5000
 
-CMD python metric_server.py
+CMD python start.py
 
