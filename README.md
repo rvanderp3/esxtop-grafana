@@ -67,8 +67,8 @@ correlate etcd performance against ESXi performance.
 
 ~~~
 function promqlQuery() {
-    END_TIME=$(date +%s) 
-    START_TIME=$(date --date="30 minutes ago" +%s)
+    END_TIME=$(date -u +%s) 
+    START_TIME=$(date -u --date="30 minutes ago" +%s)
 
     oc exec -c prometheus -n openshift-monitoring prometheus-k8s-0 -- curl --data-urlencode "query=$1" --data-urlencode "step=10" --data-urlencode "start=$START_TIME" --data-urlencode "end=$END_TIME" http://localhost:9090/api/v1/query_range 
 }
