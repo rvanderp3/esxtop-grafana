@@ -4,4 +4,8 @@ datasources:
   - name: esxtop batch reader
     type: prometheus
     access: proxy
-    url: http://dataserv:5000
+    url: http://dataserv:5000/esxtop
+  - name: promql result reader
+    type: prometheus
+    access: proxy
+    url: http://dataserv:5000/promql
