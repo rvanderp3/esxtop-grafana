@@ -3,14 +3,22 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from datetime import datetime
-from flask import Flask, jsonify, request
-from start import app
+from flask import Flask, jsonify, request, Blueprint
 import json 
 import copy
 import re
 
-@app.route("/esxtop/api/v1/label/__name__/values", methods=['GET'])
+esxtop_bp = Blueprint('esxtop', __name__)
+
+columnMap = dict()
+metrics = dict()
+hostname=""
+
+print(">>>> Initializing esxtop datasource")
+
+@esxtop_bp.route("/esxtop/api/v1/label/__name__/values", methods=['GET'])
 def labels():
+    reloadMetrics()
     labels = []
     outResults = {
         "status": "success",
@@ -22,10 +30,11 @@ def labels():
         labels.append(col)
     return json.dumps(outResults)
     
-@app.route("/esxtop/api/v1/values", methods=['GET'])
-@app.route("/esxtop/api/v1/query", methods=['GET'])
-@app.route("/esxtop/api/v1/query_range", methods=['GET'])
+@esxtop_bp.route("/esxtop/api/v1/values", methods=['GET'])
+@esxtop_bp.route("/esxtop/api/v1/query", methods=['GET'])
+@esxtop_bp.route("/esxtop/api/v1/query_range", methods=['GET'])
 def query():
+    reloadMetrics()
     query_parameters = request.args
     
     query_val = query_parameters.get('query')
@@ -34,13 +43,10 @@ def query():
     return populateResults(query_val,start_time,end_time)
     
 
-@app.route("/esxtop/api/v1/metadata", methods=['GET'])
+@esxtop_bp.route("/esxtop/api/v1/metadata", methods=['GET'])
 def metadata():
     return getMetadata()
 
-columnMap = dict()
-metrics = dict()
-hostname=""
 
 metadataResults = {
     "status": "success",
@@ -114,33 +120,43 @@ def populateResults(query, start, end):
 def timeToMillis(time):    
     return datetime.strptime(time,'%m/%d/%Y %H:%M:%S').timestamp()
 
-with open('/csv/data/esxtop/metrics.csv') as f:
-    firstLine = True
-    for line in f:
-        columns = line.split(",")        
-        index = 0
-        if firstLine:
-            firstLine = False
-            metrics["time"] = []
-            for col in columns:
-                try:
-                    col = col[3:]
-                    hostnameLoc = col.index("\\")   
-                    if hostname == "":
-                        hostname = col[0:hostnameLoc]           
-                        print("hn:"+hostname)      
-                    name = col[hostnameLoc+1:-1]
-                    name = re.sub("[() ]","",name).replace('\\', '_')                    
-                    columnMap[name] = index
-                    metrics[name] = []
-                    index = index + 1
-                except ValueError:
-                    index = index + 1
-                    continue                 
-        else:
-            metrics["time"].append(timeToMillis(columns[0].replace('"', '')))
-            for col in columnMap:
-                val = columns[columnMap[col]].replace('"', '')
-                metrics[col].append(val)
+def reloadMetrics():
+    global hostname, columnMap, metrics
+    columnMap = dict()
+    metrics = dict()
+
+    print(">>>> Loading metrics.csv")
+    with open('/csv/data/esxtop/metrics.csv') as f:    
+        print(">>>> Opened metrics.csv")
+        firstLine = True
+        for line in f:
+            columns = line.split(",")        
+            index = 0
+            if firstLine:
+                firstLine = False
+                metrics["time"] = []
+                for col in columns:
+                    try:
+                        col = col[3:]
+                        hostnameLoc = col.index("\\")   
+                        if hostname == "":
+                            hostname = col[0:hostnameLoc]           
+                            print("hn:"+hostname)      
+                        name = col[hostnameLoc+1:-1]
+                        name = re.sub("[() ]","",name).replace('\\', '_')                    
+                        columnMap[name] = index
+                        metrics[name] = []
+                        index = index + 1
+                    except ValueError:
+                        index = index + 1
+                        continue                 
+            else:
+                metrics["time"].append(timeToMillis(columns[0].replace('"', '')))
+                for col in columnMap:
+                    val = columns[columnMap[col]].replace('"', '')
+                    metrics[col].append(val)
+print(">>>> Initialized esxtop datasource")
+
+
 
 
