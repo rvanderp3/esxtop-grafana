@@ -7,6 +7,9 @@ from flask import Flask, jsonify, request, Blueprint
 import json 
 import copy
 import re
+from os import listdir
+from os.path import isfile, join
+
 
 esxtop_bp = Blueprint('esxtop', __name__)
 
@@ -18,7 +21,7 @@ print(">>>> Initializing esxtop datasource")
 
 @esxtop_bp.route("/esxtop/api/v1/label/__name__/values", methods=['GET'])
 def labels():
-    reloadMetrics()
+    #reloadMetrics()
     labels = []
     outResults = {
         "status": "success",
@@ -34,7 +37,7 @@ def labels():
 @esxtop_bp.route("/esxtop/api/v1/query", methods=['GET'])
 @esxtop_bp.route("/esxtop/api/v1/query_range", methods=['GET'])
 def query():
-    reloadMetrics()
+    # reloadMetrics()
     query_parameters = request.args
     
     query_val = query_parameters.get('query')
@@ -125,38 +128,46 @@ def reloadMetrics():
     columnMap = dict()
     metrics = dict()
 
-    print(">>>> Loading metrics.csv")
-    with open('/csv/data/esxtop/metrics.csv') as f:    
-        print(">>>> Opened metrics.csv")
-        firstLine = True
-        for line in f:
-            columns = line.split(",")        
-            index = 0
-            if firstLine:
-                firstLine = False
-                metrics["time"] = []
-                for col in columns:
-                    try:
-                        col = col[3:]
-                        hostnameLoc = col.index("\\")   
-                        if hostname == "":
-                            hostname = col[0:hostnameLoc]           
-                            print("hn:"+hostname)      
-                        name = col[hostnameLoc+1:-1]
-                        name = re.sub("[() ]","",name).replace('\\', '_')                    
-                        columnMap[name] = index
-                        metrics[name] = []
-                        index = index + 1
-                    except ValueError:
-                        index = index + 1
-                        continue                 
-            else:
-                metrics["time"].append(timeToMillis(columns[0].replace('"', '')))
-                for col in columnMap:
-                    val = columns[columnMap[col]].replace('"', '')
-                    metrics[col].append(val)
+    for fname in listdir('/csv/data/esxtop'):
+        fullPath = join('/csv/data/esxtop',fname)
+        if isfile(fullPath) and fname[0] != "." :
+            print(">>>> Loading " + fname)
+            with open(fullPath) as f:    
+                print(">>>> Opened " + fname)
+                firstLine = True
+                for line in f:
+                    columns = line.split(",")        
+                    index = 0
+                    if firstLine:
+                        firstLine = False
+                        metrics["time"] = []
+                        for col in columns:
+                            try:
+                                col = col[3:]
+                                #try: 
+                                hostnameLoc = col.index("\\")   
+                                if hostname == "":
+                                    hostname = col[0:hostnameLoc]           
+                                    print("hn:"+hostname)      
+                                name = col[hostnameLoc+1:-1]
+                                name = re.sub("[() ]","",name).replace('\\', '_')                    
+                                # except ValueError:
+                                #     name = fname+"_"+col
+                                #     name = re.sub("[() ]","",name).replace('\\', '_')                    
+                                columnMap[name] = index
+                                metrics[name] = []
+                                index = index + 1
+                            except ValueError:
+                                index = index + 1
+                                continue                 
+                    else:
+                        metrics["time"].append(timeToMillis(columns[0].replace('"', '')))
+                        for col in columnMap:
+                            val = columns[columnMap[col]].replace('"', '')
+                            metrics[col].append(val)
+
 print(">>>> Initialized esxtop datasource")
 
-
+reloadMetrics()
 
 
