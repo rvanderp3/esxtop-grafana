@@ -1,6 +1,6 @@
 FROM python
 
-COPY *.py .
+COPY *.py ./
 RUN pip install flask
 EXPOSE 5000
 

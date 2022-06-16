@@ -9,3 +9,7 @@ datasources:
     type: prometheus
     access: proxy
     url: http://dataserv:5000/promql
+  - name: etcd result reader
+    type: prometheus
+    access: proxy
+    url: http://dataserv:5000/etcd
