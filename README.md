@@ -81,3 +81,7 @@ promqlQuery "histogram_quantile(0.9999, sum(rate(etcd_disk_backend_commit_durati
 ## Adding Extracted Metrics to Grafana
 
 Copy the extracted metrics file to `dataserv/data/promql`.  The files will be read in under the `promql result reader` data source in grafana.
+
+## Processing etcd log files
+
+etcd log files can be read without any required preprocessing by placing them in `dataserv/data/etcd`.  There will be an etcd datasource when podman-compose is started.
